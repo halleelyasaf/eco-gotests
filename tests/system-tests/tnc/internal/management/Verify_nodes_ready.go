@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/openshift-kni/eco-goinfra/pkg/clusteroperator"
+	"github.com/openshift-kni/eco-goinfra/pkg/clusterversion"
 	"github.com/openshift-kni/eco-goinfra/pkg/mco"
 	"github.com/openshift-kni/eco-goinfra/pkg/nodes"
 
@@ -54,6 +56,20 @@ func SetSystemReservedMemoryForMasterNodes(ctx SpecContext) {
 		Expect(err).ToNot(HaveOccurred(), fmt.Sprintf("Error getting master nodes list: %v", err))
 		Expect(isReady).To(Equal(true),
 			fmt.Sprintf("Failed master nodes status, not all Master node are Ready; %v", isReady))
+
+		glog.V(tncparams.TncLogLevel).Infof("Checking that the clusterversion is available")
+
+		_, err = clusterversion.Pull(APIClient)
+		Expect(err).ToNot(HaveOccurred(), fmt.Sprintf("Error accessing csv: %v", err))
+
+		var coBuilder []*clusteroperator.Builder
+		coBuilder, err = clusteroperator.List(APIClient)
+		Expect(err).To(BeNil(), fmt.Sprintf("ClusterOperator List not found: %v", err))
+		Expect(len(coBuilder)).ToNot(Equal(0), "Empty clusterOperators list received")
+
+		_, err = clusteroperator.WaitForAllClusteroperatorsAvailable(APIClient, 60*time.Second)
+		Expect(err).ToNot(HaveOccurred(),
+			fmt.Sprintf("Error waiting for all available clusteroperators: %v", err))
 	}
 } // func SetSystemReservedMemoryForMasterNodes (ctx SpecContext)
 

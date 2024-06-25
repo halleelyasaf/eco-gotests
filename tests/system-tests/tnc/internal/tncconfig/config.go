@@ -36,6 +36,7 @@ type TncConfig struct {
 	RegistryRepository          string `yaml:"registry_repository" envconfig:"ECO_SYSTEM_TNC_REGISTRY_REPOSITORY"`
 	CPUIsolated                 string `yaml:"cpu_isolated" envconfig:"ECO_SYSTEM_TNC_CPU_ISOLATED"`
 	CPUReserved                 string `yaml:"cpu_reserved" envconfig:"ECO_SYSTEM_TNC_CPU_RESERVED"`
+	OcpUpgradeUpstreamURL       string `yaml:"ocpUpgradeUpstreamUrl" envconfig:"ECO_CNF_TNC_OCP_UPGRADE_UPSTREAM_URL"`
 	OdfLabel                    string
 	TncPpLabel                  string
 	TncCpLabel                  string
