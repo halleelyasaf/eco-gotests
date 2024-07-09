@@ -20,31 +20,31 @@ import (
 	"github.com/openshift-kni/eco-gotests/tests/system-tests/tnc/internal/tncparams"
 )
 
+// SetSystemReservedMemoryForMasterNodes assert system reserved memory for masters succeeded.
 func SetSystemReservedMemoryForMasterNodes(ctx SpecContext) {
 	glog.V(tncparams.TncLogLevel).Infof("Verify system reserved memory config for masters succeeded")
 
-	kubeletConfigName := "set-sysreserved-master"
-	systemReservedBuilder := mco.NewKubeletConfigBuilder(APIClient, kubeletConfigName).
+	systemReservedBuilder := mco.NewKubeletConfigBuilder(APIClient, tncparams.KubeletConfigName).
 		WithMCPoolSelector("pools.operator.machineconfiguration.openshift.io/master", "").
 		WithSystemReserved(tncparams.SystemReservedCPU, tncparams.SystemReservedMemory)
 
 	if !systemReservedBuilder.Exists() {
 		glog.V(tncparams.TncLogLevel).Infof("Create system-reserved configuration")
 
-		_, err := systemReservedBuilder.Create()
+		systemReserved, err := systemReservedBuilder.Create()
 		Expect(err).ToNot(HaveOccurred(), "Failed to create %s kubeletConfig objects "+
-			"with system-reserved definition", kubeletConfigName)
+			"with system-reserved definition", tncparams.KubeletConfigName)
 
-		// _, err = nodes.WaitForAllNodesToReboot(
-		// 	APIClient,
-		// 	40*time.Minute,
-		// 	TncConfig.ControlPlaneLabelListOption)
-		// Expect(err).ToNot(HaveOccurred(), "Nodes failed to reboot after applying %s config; %s",
-		// 	kubeletConfigName, err)
+		_, err = nodes.WaitForAllNodesToReboot(
+			APIClient,
+			40*time.Minute,
+			TncConfig.ControlPlaneLabelListOption)
+		Expect(err).ToNot(HaveOccurred(), "Nodes failed to reboot after applying %s config; %s",
+			tncparams.KubeletConfigName, err)
 
-		// Expect(systemReserved.Exists()).To(Equal(true),
-		// 	"Failed to setup master system reserved memory, %s kubeletConfig not found; %s",
-		// 	kubeletConfigName, err)
+		Expect(systemReserved.Exists()).To(Equal(true),
+			"Failed to setup master system reserved memory, %s kubeletConfig not found; %s",
+			tncparams.KubeletConfigName, err)
 
 		glog.V(tncparams.TncLogLevel).Infof("Checking all master nodes are Ready")
 
@@ -53,7 +53,7 @@ func SetSystemReservedMemoryForMasterNodes(ctx SpecContext) {
 			APIClient,
 			30*time.Second,
 			TncConfig.ControlPlaneLabelListOption)
-		Expect(err).ToNot(HaveOccurred(), fmt.Sprintf("Error getting master nodes list: %v", err))
+		Expect(err).ToNot(HaveOccurred(), fmt.Sprintf("Some nodes are not ready due to: %v", err))
 		Expect(isReady).To(Equal(true),
 			fmt.Sprintf("Failed master nodes status, not all Master node are Ready; %v", isReady))
 
@@ -71,7 +71,7 @@ func SetSystemReservedMemoryForMasterNodes(ctx SpecContext) {
 		Expect(err).ToNot(HaveOccurred(),
 			fmt.Sprintf("Error waiting for all available clusteroperators: %v", err))
 	}
-} // func SetSystemReservedMemoryForMasterNodes (ctx SpecContext)
+}
 
 // VerifyPostDeploymentConfig container that contains tests for basic post-deployment config verification.
 func VerifyPostDeploymentConfig() {

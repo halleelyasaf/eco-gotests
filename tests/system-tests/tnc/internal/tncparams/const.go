@@ -159,4 +159,7 @@ const (
 
 	// NTODeploymentName is a node tuning operator deployment name.
 	NTODeploymentName = "cluster-node-tuning-operator"
+
+	// KubeletConfigName is a identifier of a Kubernetes Kubelet configuration.
+	KubeletConfigName = "set-sysreserved-master"
 )
